@@ -45,7 +45,6 @@ jobs:
 
           wget -q -O "/tmp/${SDK_ARCHIVE}" "${SDK_URL}"
           tar -xJf "/tmp/${SDK_ARCHIVE}" -C /tmp
-          mv "/tmp/zephyr-sdk-${SDK_VERSION}" "${SDK_DIR}"
           "${SDK_DIR}/setup.sh" -t arm-zephyr-eabi -h -c
 
       - name: Set SDK environment
