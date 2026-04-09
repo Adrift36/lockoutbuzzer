@@ -1,0 +1,17 @@
+# Zephyr / west
+build/
+.cache/
+zephyr/
+modules/
+tools/
+west.yml
+
+# Python
+.venv/
+__pycache__/
+*.pyc
+
+# OS/editor
+.vscode/
+.DS_Store
+Thumbs.db
