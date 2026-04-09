@@ -1,4 +1,4 @@
-# Lockout Buzzers (nRF52840)
+﻿# Lockout Buzzers (nRF52840)
 
 Separate repository for the multiplayer lockout buzzer system.
 
@@ -9,12 +9,10 @@ Separate repository for the multiplayer lockout buzzer system.
 - Host selected via jumper pin
 - Low-latency wireless lockout behavior
 
-## Hardware target
-
-- nRF52840 dev boards compatible with nice!nano v2 layout
-
 ## Development style
 
-This repo uses **small, verifiable steps**.
+This repo advances in small, verified steps.
 
-Start with [docs/implementation-steps.md](docs/implementation-steps.md).
+Start here:
+- [docs/phase-a-quickstart.md](docs/phase-a-quickstart.md)
+- [docs/implementation-steps.md](docs/implementation-steps.md)
