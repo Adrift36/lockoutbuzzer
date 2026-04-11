@@ -1,9 +1,9 @@
 ﻿#include <bluefruit.h>
 
 // ---------- Pin config (adjust for your board wiring) ----------
-const uint8_t PIN_LED         = LED_BUILTIN;
-const uint8_t PIN_BUTTON      = 1;          // Board header D1, active-low button to GND
-const uint8_t PIN_HOST_SELECT = 21;         // Board header D21, jumper to GND => HOST
+const uint8_t APP_LED_PIN         = LED_BUILTIN;
+const uint8_t APP_BUTTON_PIN      = 1;          // Board header D1, active-low button to GND
+const uint8_t APP_HOST_SELECT_PIN = 21;         // Board header D21, jumper to GND => HOST
 
 // ---------- Protocol ----------
 // 6-byte manufacturer payload:
@@ -56,9 +56,9 @@ uint8_t derivePlayerId() {
 
 void ledBlink(uint16_t onMs, uint16_t offMs, uint8_t count = 1) {
   for (uint8_t i = 0; i < count; i++) {
-    digitalWrite(PIN_LED, HIGH);
+    digitalWrite(APP_LED_PIN, HIGH);
     delay(onMs);
-    digitalWrite(PIN_LED, LOW);
+    digitalWrite(APP_LED_PIN, LOW);
     delay(offMs);
   }
 }
@@ -183,20 +183,20 @@ void logBootBanner() {
   Serial.println("============================");
   Serial.println("Lockout Buzzer MVP booting");
   Serial.print("Role select pin D21 = ");
-  Serial.println(PIN_HOST_SELECT);
+  Serial.println(APP_HOST_SELECT_PIN);
   Serial.print("Button pin D1 = ");
-  Serial.println(PIN_BUTTON);
+  Serial.println(APP_BUTTON_PIN);
   Serial.print("LED pin = ");
-  Serial.println(PIN_LED);
+  Serial.println(APP_LED_PIN);
   Serial.println("Host-select jumper low => HOST");
   Serial.println("Host-select jumper high/open => PLAYER");
   Serial.println("============================");
 }
 
 void setup() {
-  pinMode(PIN_LED, OUTPUT);
-  pinMode(PIN_BUTTON, INPUT_PULLUP);
-  pinMode(PIN_HOST_SELECT, INPUT_PULLUP);
+  pinMode(APP_LED_PIN, OUTPUT);
+  pinMode(APP_BUTTON_PIN, INPUT_PULLUP);
+  pinMode(APP_HOST_SELECT_PIN, INPUT_PULLUP);
 
   Serial.begin(115200);
   unsigned long startWait = millis();
@@ -211,9 +211,9 @@ void setup() {
   Bluefruit.setName("lockout-mvp");
 
   playerId = derivePlayerId();
-  isHost = (digitalRead(PIN_HOST_SELECT) == LOW); // jumper to GND => host
+  isHost = (digitalRead(APP_HOST_SELECT_PIN) == LOW); // jumper to GND => host
 
-  attachInterrupt(digitalPinToInterrupt(PIN_BUTTON), buttonISR, FALLING);
+  attachInterrupt(digitalPinToInterrupt(APP_BUTTON_PIN), buttonISR, FALLING);
 
   if (isHost) {
     setupHost();
@@ -231,7 +231,7 @@ void loop() {
 
     // Basic debounce
     delay(8);
-    if (digitalRead(PIN_BUTTON) == LOW) {
+    if (digitalRead(APP_BUTTON_PIN) == LOW) {
       if (!isHost && !roundLocked) {
         Serial.println("PLAYER press -> adv burst");
         advertisePressBurst();
@@ -249,7 +249,7 @@ void loop() {
       Serial.print("Button event handled on ");
       Serial.println(isHost ? "HOST" : "PLAYER");
 
-      while (digitalRead(PIN_BUTTON) == LOW) delay(1);
+      while (digitalRead(APP_BUTTON_PIN) == LOW) delay(1);
     }
   }
 
@@ -261,9 +261,9 @@ void loop() {
       if (!roundLocked) {
         ledBlink(80, 0, 1); // short heartbeat
       } else {
-        digitalWrite(PIN_LED, HIGH); // locked => solid for short window
+        digitalWrite(APP_LED_PIN, HIGH); // locked => solid for short window
         delay(60);
-        digitalWrite(PIN_LED, LOW);
+        digitalWrite(APP_LED_PIN, LOW);
       }
     } else {
       ledBlink(25, 0, 1); // tiny player heartbeat
