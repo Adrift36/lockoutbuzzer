@@ -2,8 +2,8 @@
 
 // ---------- Pin config (adjust for your board wiring) ----------
 const uint8_t APP_LED_PIN         = LED_BUILTIN;
-const uint8_t APP_BUTTON_PIN      = 1;          // Board header D1, active-low button to GND
-const uint8_t APP_HOST_SELECT_PIN = 21;         // Board header D21, jumper to GND => HOST
+const uint8_t APP_BUTTON_PIN      = D1;         // SuperMini D1 = P0.08, active-low button to GND
+const uint8_t APP_HOST_SELECT_PIN = D18;        // SuperMini D18 = P1.01, jumper to GND => HOST
 
 // ---------- Protocol ----------
 // 6-byte manufacturer payload:
@@ -182,7 +182,7 @@ void logBootBanner() {
   Serial.println();
   Serial.println("============================");
   Serial.println("Lockout Buzzer MVP booting");
-  Serial.print("Role select pin D21 = ");
+  Serial.print("Role select pin D18 = ");
   Serial.println(APP_HOST_SELECT_PIN);
   Serial.print("Button pin D1 = ");
   Serial.println(APP_BUTTON_PIN);
@@ -211,6 +211,8 @@ void setup() {
   Bluefruit.setName("lockout-mvp");
 
   playerId = derivePlayerId();
+  Serial.print("Host-select raw read before role decide = ");
+  Serial.println(digitalRead(APP_HOST_SELECT_PIN));
   isHost = (digitalRead(APP_HOST_SELECT_PIN) == LOW); // jumper to GND => host
 
   attachInterrupt(digitalPinToInterrupt(APP_BUTTON_PIN), buttonISR, FALLING);

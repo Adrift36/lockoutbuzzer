@@ -39,9 +39,11 @@ Typical PlatformIO commands:
 
 ## Pin defaults (change as needed)
 
-- `PIN_LED = LED_BUILTIN`
-- `PIN_BUTTON = 1` (board header D1, active-low to GND)
-- `PIN_HOST_SELECT = 21` (board header D21, jumper to GND = host)
+- `PIN_LED = LED_BUILTIN` (on this board package that is D22 / P0.15)
+- `PIN_BUTTON = D1` (SuperMini D1 = P0.08, active-low to GND)
+- `PIN_HOST_SELECT = D18` (SuperMini D18 = P1.01, jumper to GND = host)
+
+Avoid using `D21` for host-select on this board package because it is tied to `EXT_VCC` control.
 
 ## Important MVP limitations
 
