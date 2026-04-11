@@ -2,8 +2,8 @@
 
 // ---------- Pin config (adjust for your board wiring) ----------
 const uint8_t PIN_LED         = LED_BUILTIN;
-const uint8_t PIN_BUTTON      = PIN_A0;    // Active-low button to GND
-const uint8_t PIN_HOST_SELECT = PIN_A1;    // Jumper to GND => HOST
+const uint8_t PIN_BUTTON      = 1;          // Board header D1, active-low button to GND
+const uint8_t PIN_HOST_SELECT = 21;         // Board header D21, jumper to GND => HOST
 
 // ---------- Protocol ----------
 // 6-byte manufacturer payload:
@@ -35,6 +35,8 @@ uint8_t playerId = 0;
 uint8_t seqNo = 0;
 uint32_t hostLockMillis = 0;
 
+void logBootBanner();
+
 uint8_t crc8_xor(const uint8_t* p, size_t n) {
   uint8_t c = 0;
   for (size_t i = 0; i < n; i++) c ^= p[i];
@@ -59,6 +61,44 @@ void ledBlink(uint16_t onMs, uint16_t offMs, uint8_t count = 1) {
     digitalWrite(PIN_LED, LOW);
     delay(offMs);
   }
+}
+
+void printPacketSummary(const AdvPacket& pkt, int8_t rssi) {
+  Serial.print("HEARD packet: player=");
+  Serial.print(pkt.playerId);
+  Serial.print(" seq=");
+  Serial.print(pkt.seq);
+  Serial.print(" flags=0x");
+  Serial.print(pkt.flags, HEX);
+  Serial.print(" rssi=");
+  Serial.println(rssi);
+}
+
+void sendAnnounceBurst(const char* reason) {
+  AdvPacket pkt;
+  pkt.magic0 = PKT_MAGIC0;
+  pkt.magic1 = PKT_MAGIC1;
+  pkt.playerId = playerId;
+  pkt.seq = ++seqNo;
+  pkt.flags = 0x00;
+  pkt.crc = crc8_xor((uint8_t*)&pkt, 5);
+
+  Serial.print("TX announce: ");
+  Serial.print(reason);
+  Serial.print(" player=");
+  Serial.print(playerId);
+  Serial.print(" seq=");
+  Serial.println(pkt.seq);
+
+  Bluefruit.Advertising.stop();
+  Bluefruit.Advertising.clearData();
+  Bluefruit.Advertising.addFlags(BLE_GAP_ADV_FLAGS_LE_ONLY_GENERAL_DISC_MODE);
+  Bluefruit.Advertising.addTxPower();
+  Bluefruit.Advertising.addManufacturerData((uint8_t*)&pkt, sizeof(pkt));
+  Bluefruit.Advertising.setInterval(32, 48);
+  Bluefruit.Advertising.start(1);
+  delay(100);
+  Bluefruit.Advertising.stop();
 }
 
 void advertisePressBurst() {
@@ -95,6 +135,8 @@ void scanCallback(ble_gap_evt_adv_report_t* report) {
   if (pkt.crc != crc8_xor((uint8_t*)&pkt, 5)) return;
   if (!(pkt.flags & FLAG_PRESSED)) return;
 
+  printPacketSummary(pkt, report->rssi);
+
   if (!roundLocked) {
     roundLocked = true;
     winnerId = pkt.playerId;
@@ -115,13 +157,30 @@ void setupHost() {
   Bluefruit.Scanner.start(0); // continuous
 
   Serial.println("Role=HOST");
+  Serial.println("Radio mode: scanning for player adverts (not connected)");
   ledBlink(120, 120, 2);
 }
 
 void setupPlayer() {
   Serial.print("Role=PLAYER id=");
   Serial.println(playerId);
+  Serial.println("Radio mode: advertising buzz packets on button press");
   ledBlink(60, 80, 3);
+}
+
+void logBootBanner() {
+  Serial.println();
+  Serial.println("============================");
+  Serial.println("Lockout Buzzer MVP booting");
+  Serial.print("Role select pin D21 = ");
+  Serial.println(PIN_HOST_SELECT);
+  Serial.print("Button pin D1 = ");
+  Serial.println(PIN_BUTTON);
+  Serial.print("LED pin = ");
+  Serial.println(PIN_LED);
+  Serial.println("Host-select jumper low => HOST");
+  Serial.println("Host-select jumper high/open => PLAYER");
+  Serial.println("============================");
 }
 
 void setup() {
@@ -130,7 +189,12 @@ void setup() {
   pinMode(PIN_HOST_SELECT, INPUT_PULLUP);
 
   Serial.begin(115200);
-  delay(200);
+  unsigned long startWait = millis();
+  while (!Serial && (millis() - startWait < 3000)) {
+    delay(10);
+  }
+
+  logBootBanner();
 
   Bluefruit.begin();
   Bluefruit.setTxPower(4);
@@ -141,8 +205,12 @@ void setup() {
 
   attachInterrupt(digitalPinToInterrupt(PIN_BUTTON), buttonISR, FALLING);
 
-  if (isHost) setupHost();
-  else setupPlayer();
+  if (isHost) {
+    setupHost();
+  } else {
+    setupPlayer();
+    sendAnnounceBurst("boot");
+  }
 }
 
 void loop() {
@@ -167,6 +235,9 @@ void loop() {
         Serial.println("HOST reset round");
         ledBlink(40, 40, 4);
       }
+
+      Serial.print("Button event handled on ");
+      Serial.println(isHost ? "HOST" : "PLAYER");
 
       while (digitalRead(PIN_BUTTON) == LOW) delay(1);
     }

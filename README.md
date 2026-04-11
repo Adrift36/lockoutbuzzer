@@ -40,8 +40,8 @@ Typical PlatformIO commands:
 ## Pin defaults (change as needed)
 
 - `PIN_LED = LED_BUILTIN`
-- `PIN_BUTTON = PIN_A0` (active-low to GND)
-- `PIN_HOST_SELECT = PIN_A1` (jumper to GND = host)
+- `PIN_BUTTON = 1` (board header D1, active-low to GND)
+- `PIN_HOST_SELECT = 21` (board header D21, jumper to GND = host)
 
 ## Important MVP limitations
 

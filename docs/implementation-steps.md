@@ -18,6 +18,10 @@ Verification:
 - Player button press prints lockout winner on host serial
 - Repeat over multiple rounds
 
+Pin notes:
+- Button: board header D1
+- Host select: board header D21
+
 Exit criteria:
 - Repeatable lockout detection on bench
 
