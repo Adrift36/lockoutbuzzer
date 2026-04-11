@@ -1,0 +1,42 @@
+﻿name: Arduino MVP build
+
+on:
+  push:
+    paths:
+      - arduino/**
+      - .github/workflows/arduino-build.yml
+      - docs/**
+      - README.md
+  pull_request:
+    paths:
+      - arduino/**
+      - .github/workflows/arduino-build.yml
+      - docs/**
+      - README.md
+  workflow_dispatch:
+
+concurrency:
+  group: arduino-mvp-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  compile:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Arduino CLI
+        uses: arduino/setup-arduino-cli@v2
+
+      - name: Install Adafruit nRF52 core
+        run: |
+          arduino-cli core update-index --additional-urls https://adafruit.github.io/arduino-board-index/package_adafruit_index.json
+          arduino-cli core install adafruit:nrf52 --additional-urls https://adafruit.github.io/arduino-board-index/package_adafruit_index.json
+
+      - name: Compile MVP sketch
+        run: |
+          arduino-cli compile \
+            --fqbn adafruit:nrf52:feather52840 \
+            arduino/lockout_mvp
