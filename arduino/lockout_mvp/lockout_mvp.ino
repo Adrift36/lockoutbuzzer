@@ -133,9 +133,17 @@ void scanCallback(ble_gap_evt_adv_report_t* report) {
 
   if (pkt.magic0 != PKT_MAGIC0 || pkt.magic1 != PKT_MAGIC1) return;
   if (pkt.crc != crc8_xor((uint8_t*)&pkt, 5)) return;
-  if (!(pkt.flags & FLAG_PRESSED)) return;
 
-  printPacketSummary(pkt, report->rssi);
+  Serial.print("HEARD valid packet: player=");
+  Serial.print(pkt.playerId);
+  Serial.print(" seq=");
+  Serial.print(pkt.seq);
+  Serial.print(" flags=0x");
+  Serial.print(pkt.flags, HEX);
+  Serial.print(" rssi=");
+  Serial.println(report->rssi);
+
+  if (!(pkt.flags & FLAG_PRESSED)) return;
 
   if (!roundLocked) {
     roundLocked = true;
@@ -153,6 +161,7 @@ void scanCallback(ble_gap_evt_adv_report_t* report) {
 void setupHost() {
   Bluefruit.Scanner.setRxCallback(scanCallback);
   Bluefruit.Scanner.useActiveScan(false);
+  Bluefruit.Scanner.setInterval(32, 32);
   Bluefruit.Scanner.restartOnDisconnect(false);
   Bluefruit.Scanner.start(0); // continuous
 
@@ -165,6 +174,7 @@ void setupPlayer() {
   Serial.print("Role=PLAYER id=");
   Serial.println(playerId);
   Serial.println("Radio mode: advertising buzz packets on button press");
+  Serial.println("Player will also send a boot announce packet for testing");
   ledBlink(60, 80, 3);
 }
 
