@@ -1,6 +1,6 @@
 ﻿# Lockout Buzzer MVP (Arduino)
 
-This repo now uses an Arduino-first MVP to reduce setup friction.
+This project uses a **local Arduino flashing workflow** (no GitHub Actions required).
 
 ## Current MVP
 
@@ -11,12 +11,31 @@ This repo now uses an Arduino-first MVP to reduce setup friction.
 - Transport: BLE advertising packets (2.4 GHz)
 - Host locks on first valid player press it receives
 
-## Important MVP limitations
+## Primary workflow: Arduino IDE (recommended)
 
-- This is intentionally minimal.
-- Players currently transmit buzz packets to host.
-- Host decides winner and indicates on host LED/serial.
-- Full winner broadcast to all players is next step.
+1. Install Arduino IDE 2.x
+2. Add board index URL in Preferences:
+   - `https://adafruit.github.io/arduino-board-index/package_adafruit_index.json`
+3. Install **Adafruit nRF52 Boards** in Boards Manager
+4. Open `arduino/lockout_mvp/lockout_mvp.ino`
+5. Select board target (start with **Adafruit Feather nRF52840 Express**)
+6. Select COM port
+7. Click **Upload**
+
+If upload fails, double-tap reset to enter bootloader, then upload again.
+
+## Optional workflow: PlatformIO
+
+Yes — you can use PlatformIO too.
+
+- Config file: `platformio.ini`
+- Default env: `feather_nrf52840`
+- Source folder: `arduino/lockout_mvp`
+
+Typical PlatformIO commands:
+- Build: `pio run`
+- Upload: `pio run -t upload`
+- Serial monitor: `pio device monitor -b 115200`
 
 ## Pin defaults (change as needed)
 
@@ -24,12 +43,9 @@ This repo now uses an Arduino-first MVP to reduce setup friction.
 - `PIN_BUTTON = PIN_A0` (active-low to GND)
 - `PIN_HOST_SELECT = PIN_A1` (jumper to GND = host)
 
-## GitHub Actions
+## Important MVP limitations
 
-Workflow: `.github/workflows/arduino-build.yml`
-
-It compiles the sketch with Adafruit nRF52 core (`feather52840` target) to validate build health.
-
-## Next small step
-
-After this build is green, add host->player winner broadcast in a second commit.
+- This is intentionally minimal.
+- Players currently transmit buzz packets to host.
+- Host decides winner and indicates on host LED/serial.
+- Full winner broadcast to all players is next step.

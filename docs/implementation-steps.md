@@ -3,19 +3,20 @@
 ## Step 0 — Repo split ✅
 - Lockout firmware moved to dedicated repo.
 
-## Step 1 — Arduino MVP build pipeline ✅ (current)
+## Step 1 — Arduino local MVP ✅ (current)
 
 Deliverables:
 - Arduino sketch with same-firmware role select by jumper
 - Host receives player buzz packets (BLE advertising)
-- GitHub Actions compiles sketch
+- Local flashing via Arduino IDE
+- Optional local build/upload via PlatformIO
 
 Verification:
-- GitHub Actions `Arduino MVP build` is green
 - Flash two boards with same sketch:
   - one host (jumper low)
   - one player (jumper high)
 - Player button press prints lockout winner on host serial
+- Repeat over multiple rounds
 
 Exit criteria:
 - Repeatable lockout detection on bench
